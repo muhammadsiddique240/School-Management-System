@@ -215,7 +215,7 @@ class Command(BaseCommand):
         
         for _ in range(15): # Create 15 random leaves
             user = random.choice(teacher_profiles).user
-            start_day = random.randint(1, 28)
+            start_day = random.randint(1, 25)
             LeaveApplication.objects.get_or_create(
                 user=user,
                 from_date=datetime.date(2026, 2, start_day),
