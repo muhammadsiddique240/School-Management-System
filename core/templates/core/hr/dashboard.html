@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}HR Dashboard - EduSmart{% endblock %}
+{% block page_title %}<i class="fas fa-briefcase me-2" style="color:#3b82f6;"></i>HR Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Teachers</div>
+                        <div class="stat-value">{{ total_teachers }}</div>
+                    </div>
+                    <div class="icon-box" style="background: var(--hr-light); color: var(--hr-primary);">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Classes</div>
+                        <div class="stat-value">{{ total_classes }}</div>
+                    </div>
+                    <div class="icon-box" style="background: #dbeafe; color: #2563eb;">
+                        <i class="fas fa-chalkboard"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Subjects</div>
+                        <div class="stat-value">{{ total_subjects }}</div>
+                    </div>
+                    <div class="icon-box" style="background: #e0e7ff; color: #4f46e5;">
+                        <i class="fas fa-book"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Pending Slips</div>
+                        <div class="stat-value">{{ pending_slips }}</div>
+                    </div>
+                    <div class="icon-box" style="background: #fef3c7; color: #d97706;">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card content-card h-100">
+            <div class="card-header"><i class="fas fa-user-plus me-2"></i>Quick Actions</div>
+            <div class="card-body">
+                <a href="{% url 'hr_add_teacher' %}" class="btn btn-role w-100 mb-2"><i
+                        class="fas fa-user-plus me-2"></i>Add Teacher</a>
+                <a href="{% url 'hr_manage_classes' %}" class="btn btn-outline-primary w-100 mb-2 rounded-3"><i
+                        class="fas fa-chalkboard me-2"></i>Manage Classes</a>
+                <a href="{% url 'hr_manage_subjects' %}" class="btn btn-outline-primary w-100 mb-2 rounded-3"><i
+                        class="fas fa-book me-2"></i>Manage Subjects</a>
+                <a href="{% url 'hr_create_timetable' %}" class="btn btn-outline-primary w-100 mb-2 rounded-3"><i
+                        class="fas fa-calendar-alt me-2"></i>Timetable</a>
+                <a href="{% url 'hr_payroll' %}" class="btn btn-outline-primary w-100 rounded-3"><i
+                        class="fas fa-money-check-alt me-2"></i>Payroll</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card content-card h-100">
+            <div class="card-header"><i class="fas fa-info-circle me-2"></i>System Overview</div>
+            <div class="card-body">
+                <p class="text-muted mb-2" style="font-size:0.88rem;">As HR, you can:</p>
+                <ul class="text-muted" style="font-size:0.88rem;">
+                    <li>Add new teachers (creates user account + profile)</li>
+                    <li>Manage classes, sections, and subjects</li>
+                    <li>Create timetable entries (teacher → subject → class)</li>
+                    <li>Generate monthly salary slips for all staff</li>
+                </ul>
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> After generating salary slips, the Principal must approve them before teachers
+                    can view them.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

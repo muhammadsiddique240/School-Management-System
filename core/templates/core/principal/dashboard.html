@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Principal Dashboard - EduSmart{% endblock %}
+{% block page_title %}<i class="fas fa-crown me-2" style="color:#f59e0b;"></i>Principal Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Pending Leaves</div>
+                        <div class="stat-value">{{ pending_leaves }}</div>
+                    </div>
+                    <div class="icon-box" style="background: var(--principal-light); color: var(--principal-primary);">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Salary Approvals</div>
+                        <div class="stat-value">{{ generated_slips }}</div>
+                    </div>
+                    <div class="icon-box" style="background: #fef3c7; color: #d97706;">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Total Teachers</div>
+                        <div class="stat-value">{{ total_teachers }}</div>
+                    </div>
+                    <div class="icon-box" style="background: #d1fae5; color: #059669;">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">Total Students</div>
+                        <div class="stat-value">{{ total_students }}</div>
+                    </div>
+                    <div class="icon-box" style="background: #ede9fe; color: #7c3aed;">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card content-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-calendar-check me-2"></i>Leave Requests</span>
+                <a href="{% url 'principal_leave_requests' %}" class="btn btn-role btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if pending_leaves > 0 %}
+                <p class="mb-0"><strong>{{ pending_leaves }}</strong> leave request(s) pending your approval.</p>
+                {% else %}
+                <div class="empty-state"><i class="fas fa-check-circle"></i>All caught up! No pending requests.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card content-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-stamp me-2"></i>Salary Approval</span>
+                <a href="{% url 'principal_salary_approval' %}" class="btn btn-role btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if generated_slips > 0 %}
+                <p class="mb-0"><strong>{{ generated_slips }}</strong> salary slip(s) awaiting your approval.</p>
+                {% else %}
+                <div class="empty-state"><i class="fas fa-check-circle"></i>No salary slips pending.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

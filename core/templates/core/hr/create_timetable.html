@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Create Timetable - EduSmart{% endblock %}
+{% block page_title %}<i class="fas fa-calendar-alt me-2" style="color:#3b82f6;"></i>Timetable Management{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card content-card">
+            <div class="card-header"><i class="fas fa-plus me-2"></i>Add Timetable Entry</div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% for e in field.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-role w-100"><i class="fas fa-save me-1"></i>Create
+                        Entry</button>
+                </form>
+                <div class="alert alert-info mt-3 mb-0" style="font-size:0.82rem;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    A teacher cannot be assigned to 2 classes at the same time slot.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card content-card">
+            <div class="card-header"><i class="fas fa-list me-2"></i>Recent Entries</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Class</th>
+                                <th>Subject</th>
+                                <th>Teacher</th>
+                                <th>Day</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in entries %}
+                            <tr>
+                                <td class="ps-4">{{ entry.class_grade }}</td>
+                                <td>{{ entry.subject.name }}</td>
+                                <td class="fw-medium">{{ entry.teacher.user.get_full_name }}</td>
+                                <td><span class="badge-info-soft">{{ entry.day }}</span></td>
+                                <td>{{ entry.time_slot }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="empty-state"><i class="fas fa-inbox"></i>No timetable entries
+                                    yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

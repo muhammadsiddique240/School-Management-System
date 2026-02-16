@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Salary Approval - EduSmart{% endblock %}
+{% block page_title %}<i class="fas fa-stamp me-2" style="color:#f59e0b;"></i>Salary Approval{% endblock %}
+
+{% block content %}
+<div class="card content-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-file-invoice-dollar me-2"></i>Generated Salary Slips</span>
+        {% if slips %}
+        <a href="{% url 'principal_approve_all_salaries' %}" class="btn btn-role btn-sm">
+            <i class="fas fa-check-double me-1"></i>Approve All
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Teacher</th>
+                        <th>Month</th>
+                        <th>Basic</th>
+                        <th>Deductions</th>
+                        <th>Bonus</th>
+                        <th>Net Amount</th>
+                        <th class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slip in slips %}
+                    <tr>
+                        <td class="ps-4 fw-medium">{{ slip.teacher.user.get_full_name }}</td>
+                        <td>{{ slip.month }}</td>
+                        <td>Rs {{ slip.amount }}</td>
+                        <td class="text-danger">- Rs {{ slip.deductions }}</td>
+                        <td class="text-success">+ Rs {{ slip.bonus }}</td>
+                        <td><strong>Rs {{ slip.net_amount }}</strong></td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'principal_approve_salary' slip.pk %}" class="btn btn-sm btn-success">
+                                <i class="fas fa-check me-1"></i>Approve
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty-state"><i class="fas fa-inbox"></i>No salary slips pending
+                            approval.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

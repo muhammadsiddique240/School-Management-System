@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable - {{ class_grade }} | EduSmart ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            padding: 30px;
+        }
+
+        /* ── HEADER ─────────────────────────── */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .header .meta {
+            font-size: 0.82rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        /* ── TOOLBAR (hidden on print) ──────── */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar select {
+            padding: 8px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: #fff;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .toolbar select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-print {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-print:hover {
+            background: #2563eb;
+        }
+
+        .btn-back {
+            background: #e2e8f0;
+            color: #475569;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-back:hover {
+            background: #cbd5e1;
+        }
+
+        /* ── TABLE ──────────────────────────── */
+        .timetable-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            min-width: 700px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: #1e40af;
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+        }
+
+        th:first-child {
+            background: #1e3a8a;
+            width: 110px;
+        }
+
+        td.time-col {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #334155;
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+
+        td.subject-cell {
+            position: relative;
+            vertical-align: middle;
+        }
+
+        td.subject-cell .subject-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.85rem;
+        }
+
+        td.subject-cell .teacher-name {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        td.empty-cell {
+            color: #94a3b8;
+            font-style: italic;
+            font-size: 0.78rem;
+        }
+
+        /* ── BREAK ROWS ────────────────────── */
+        tr.break-row td {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            font-weight: 600;
+            color: #92400e;
+            font-size: 0.82rem;
+            padding: 8px;
+            border-color: #f59e0b;
+        }
+
+        tr.lunch-row td {
+            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+            font-weight: 600;
+            color: #9a3412;
+            font-size: 0.85rem;
+            padding: 10px;
+            border-color: #f97316;
+        }
+
+        /* ── FOOTER ─────────────────────────── */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.78rem;
+            color: #94a3b8;
+        }
+
+        /* ── PRINT STYLES ───────────────────── */
+        @media print {
+            body {
+                padding: 10px;
+                background: #fff;
+            }
+
+            .toolbar {
+                display: none !important;
+            }
+
+            .timetable-wrapper {
+                box-shadow: none;
+            }
+
+            table {
+                min-width: unset;
+            }
+
+            th {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            tr.break-row td,
+            tr.lunch-row td {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            td.time-col {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <a href="/hr/timetable/" class="btn btn-back">← Back to Timetable</a>
+        <form method="get" style="display:flex; gap:10px; align-items:center; margin-left:auto;">
+            <select name="class_id" onchange="this.form.submit()">
+                {% for cls in classes %}
+                <option value="{{ cls.id }}" {% if cls.id == class_grade.id %}selected{% endif %}>{{ cls }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <button class="btn btn-print" onclick="window.print()">🖨️ Print Timetable</button>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>EduSmart School</h1>
+        <div class="subtitle">Weekly Timetable — {{ class_grade }}</div>
+        <div class="meta">Academic Year 2025-26 &nbsp;|&nbsp; Generated: {{ generated_date }}</div>
+    </div>
+
+    <!-- Timetable Grid -->
+    <div class="timetable-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    {% for day in days %}
+                    <th>{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in schedule %}
+                {% if row.is_break %}
+                <tr class="{% if row.is_lunch %}lunch-row{% else %}break-row{% endif %}">
+                    <td colspan="{{ days|length|add:1 }}">
+                        {% if row.is_lunch %}🍽️ Lunch Break ({{ row.label }}){% else %}☕ Short Break ({{ row.label
+                        }}){% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td class="time-col">{{ row.label }}</td>
+                    {% for cell in row.cells %}
+                    <td class="{% if cell.subject %}subject-cell{% else %}empty-cell{% endif %}">
+                        {% if cell.subject %}
+                        <div class="subject-name">{{ cell.subject }}</div>
+                        <div class="teacher-name">{{ cell.teacher }}</div>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>EduSmart ERP — School Management System &nbsp;|&nbsp; This timetable is auto-generated</p>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduSmart ERP{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #111827;
+            --sidebar-hover: #1f2937;
+            --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+            --radius: 14px;
+
+            /* Principal: Gold/Premium */
+            --principal-primary: #f59e0b;
+            --principal-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+            --principal-light: rgba(245, 158, 11, 0.1);
+
+            /* HR: Blue/Professional */
+            --hr-primary: #3b82f6;
+            --hr-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+            --hr-light: rgba(59, 130, 246, 0.1);
+
+            /* Teacher: Green/Calm */
+            --teacher-primary: #10b981;
+            --teacher-gradient: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+            --teacher-light: rgba(16, 185, 129, 0.1);
+
+            /* Student: Purple */
+            --student-primary: #8b5cf6;
+            --student-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+            --student-light: rgba(139, 92, 246, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: var(--sidebar-bg);
+            min-height: 100vh;
+            position: fixed;
+            width: 260px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar .brand {
+            padding: 1.5rem 1.3rem;
+            color: white;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar .brand .brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+
+        .sidebar .nav-section-label {
+            color: #6b7280;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            padding: 1.2rem 1.5rem 0.5rem;
+        }
+
+        .sidebar .nav-link {
+            color: #9ca3af;
+            padding: 0.7rem 1.5rem;
+            font-size: 0.88rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background: var(--sidebar-hover);
+        }
+
+        .sidebar .nav-link i {
+            width: 22px;
+            margin-right: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Active states per role */
+        .role-principal .nav-link.active {
+            color: #fbbf24;
+            background: var(--sidebar-hover);
+            border-left-color: #f59e0b;
+        }
+
+        .role-hr .nav-link.active {
+            color: #60a5fa;
+            background: var(--sidebar-hover);
+            border-left-color: #3b82f6;
+        }
+
+        .role-teacher .nav-link.active {
+            color: #34d399;
+            background: var(--sidebar-hover);
+            border-left-color: #10b981;
+        }
+
+        .role-student .nav-link.active {
+            color: #a78bfa;
+            background: var(--sidebar-hover);
+            border-left-color: #8b5cf6;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 1rem 1.3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-footer .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-footer .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: white;
+        }
+
+        .sidebar-footer .user-name {
+            color: #e5e7eb;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .sidebar-footer .user-role {
+            color: #6b7280;
+            font-size: 0.72rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-footer .logout-btn {
+            color: #6b7280;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .sidebar-footer .logout-btn:hover {
+            color: #ef4444;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 260px;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .top-bar h5 {
+            margin: 0;
+            font-weight: 700;
+            color: #111827;
+            font-size: 1.05rem;
+        }
+
+        .page-content {
+            padding: 1.5rem 2rem;
+        }
+
+        /* CARDS */
+        .stat-card {
+            border: none;
+            border-radius: var(--radius);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            background: white;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .card-body {
+            padding: 1.4rem;
+        }
+
+        .stat-card .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.78rem;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .content-card {
+            border: none;
+            border-radius: var(--radius);
+            box-shadow: var(--card-shadow);
+            background: white;
+        }
+
+        .content-card .card-header {
+            background: white;
+            border-bottom: 1px solid #f3f4f6;
+            padding: 1.1rem 1.4rem;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border-radius: var(--radius) var(--radius) 0 0 !important;
+            color: #111827;
+        }
+
+        /* TABLES */
+        .table th {
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+            border-color: #f3f4f6;
+            padding: 0.85rem 1rem;
+        }
+
+        .table td {
+            padding: 0.85rem 1rem;
+            vertical-align: middle;
+            color: #374151;
+            font-size: 0.88rem;
+            border-color: #f3f4f6;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* BADGES */
+        .badge-success-soft {
+            background: #d1fae5;
+            color: #065f46;
+            font-weight: 600;
+            padding: 0.35em 0.7em;
+            border-radius: 8px;
+            font-size: 0.78rem;
+        }
+
+        .badge-danger-soft {
+            background: #fee2e2;
+            color: #991b1b;
+            font-weight: 600;
+            padding: 0.35em 0.7em;
+            border-radius: 8px;
+            font-size: 0.78rem;
+        }
+
+        .badge-warning-soft {
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+            padding: 0.35em 0.7em;
+            border-radius: 8px;
+            font-size: 0.78rem;
+        }
+
+        .badge-info-soft {
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: 600;
+            padding: 0.35em 0.7em;
+            border-radius: 8px;
+            font-size: 0.78rem;
+        }
+
+        .badge-purple-soft {
+            background: #ede9fe;
+            color: #5b21b6;
+            font-weight: 600;
+            padding: 0.35em 0.7em;
+            border-radius: 8px;
+            font-size: 0.78rem;
+        }
+
+        /* BUTTONS */
+        .btn-role {
+            border: none;
+            color: white;
+            padding: 0.55rem 1.3rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-role:hover {
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .role-principal .btn-role {
+            background: var(--principal-gradient);
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .role-hr .btn-role {
+            background: var(--hr-gradient);
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        }
+
+        .role-teacher .btn-role {
+            background: var(--teacher-gradient);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        }
+
+        .role-student .btn-role {
+            background: var(--student-gradient);
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+        }
+
+        /* FORMS */
+        .form-control,
+        .form-select {
+            border-radius: 10px;
+            border: 1.5px solid #e5e7eb;
+            padding: 0.6rem 0.9rem;
+            font-size: 0.88rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #374151;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ALERTS */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    {% with role=request.user.role|default:"Student" %}
+    <div class="role-{{ role|lower }}">
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="brand">
+                <span class="brand-icon" {% if role == 'Principal' %}style="background: var(--principal-gradient);" {%
+                    elif role == 'HR' %}style="background: var(--hr-gradient);" {% elif role == 'Teacher'
+                    %}style="background: var(--teacher-gradient);" {% else
+                    %}style="background: var(--student-gradient);" {% endif %}>
+                    <i class="fas fa-graduation-cap"></i>
+                </span>
+                EduSmart
+            </div>
+
+            <nav class="nav flex-column mt-2">
+                <div class="nav-section-label">Main</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                    href="{% url 'dashboard' %}">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+
+                {% if role == 'Principal' %}
+                <div class="nav-section-label">Management</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'principal_leave_requests' %}active{% endif %}"
+                    href="{% url 'principal_leave_requests' %}">
+                    <i class="fas fa-calendar-check"></i> Leave Requests
+                </a>
+                <a class="nav-link {% if request.resolver_match.url_name == 'principal_salary_approval' %}active{% endif %}"
+                    href="{% url 'principal_salary_approval' %}">
+                    <i class="fas fa-stamp"></i> Salary Approval
+                </a>
+                {% endif %}
+
+                {% if role == 'HR' %}
+                <div class="nav-section-label">Staff</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'hr_add_teacher' %}active{% endif %}"
+                    href="{% url 'hr_add_teacher' %}">
+                    <i class="fas fa-user-plus"></i> Add Teacher
+                </a>
+                <div class="nav-section-label">Academics</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'hr_manage_classes' %}active{% endif %}"
+                    href="{% url 'hr_manage_classes' %}">
+                    <i class="fas fa-chalkboard"></i> Manage Classes
+                </a>
+                <a class="nav-link {% if request.resolver_match.url_name == 'hr_manage_subjects' %}active{% endif %}"
+                    href="{% url 'hr_manage_subjects' %}">
+                    <i class="fas fa-book"></i> Manage Subjects
+                </a>
+                <a class="nav-link {% if request.resolver_match.url_name == 'hr_create_timetable' %}active{% endif %}"
+                    href="{% url 'hr_create_timetable' %}">
+                    <i class="fas fa-calendar-alt"></i> Timetable
+                </a>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'hr_print_timetable' %}active{% endif %}"
+                    href="{% url 'hr_print_timetable' %}">
+                    <i class="fas fa-print"></i> Print Timetable
+                </a>
+            </li>
+                <div class="nav-section-label">Finance</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'hr_payroll' %}active{% endif %}"
+                    href="{% url 'hr_payroll' %}">
+                    <i class="fas fa-money-check-alt"></i> Payroll
+                </a>
+                {% endif %}
+
+                {% if role == 'Teacher' %}
+                <div class="nav-section-label">My Schedule</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'teacher_timetable' %}active{% endif %}"
+                    href="{% url 'teacher_timetable' %}">
+                    <i class="fas fa-calendar-alt"></i> My Timetable
+                </a>
+                <div class="nav-section-label">Finance & Leave</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'teacher_salary' %}active{% endif %}"
+                    href="{% url 'teacher_salary' %}">
+                    <i class="fas fa-file-invoice-dollar"></i> My Salary
+                </a>
+                <a class="nav-link {% if request.resolver_match.url_name == 'teacher_apply_leave' %}active{% endif %}"
+                    href="{% url 'teacher_apply_leave' %}">
+                    <i class="fas fa-paper-plane"></i> Apply Leave
+                </a>
+                {% endif %}
+
+                {% if role == 'Student' %}
+                <div class="nav-section-label">Academic</div>
+                <a class="nav-link" href="#">
+                    <i class="fas fa-chart-bar"></i> My Results
+                </a>
+                <a class="nav-link" href="#">
+                    <i class="fas fa-file-invoice-dollar"></i> Fee Status
+                </a>
+                {% endif %}
+
+                </a>
+            </nav>
+
+            <!-- User Footer -->
+            <div class="sidebar-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="user-info">
+                        <div class="avatar" {% if role == 'Principal' %}style="background: var(--principal-gradient);" {%
+                            elif role == 'HR' %}style="background: var(--hr-gradient);" {% elif role == 'Teacher'
+                            %}style="background: var(--teacher-gradient);" {% else
+                            %}style="background: var(--student-gradient);" {% endif %}>
+                            {{ request.user.first_name|first|default:"U" }}
+                        </div>
+                        <div>
+                            <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                            <div class="user-role">{{ request.user.role }}</div>
+                        </div>
+                    </div>
+                    <a href="{% url 'logout' %}" class="logout-btn" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOP BAR -->
+        <div class="main-content">
+            <div class="top-bar">
+                <h5>{% block page_title %}Dashboard{% endblock %}</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted" style="font-size:0.85rem;">
+                        <i class="fas fa-calendar-alt me-1"></i>{% now "l, F j, Y" %}
+                    </span>
+                    {% if role == 'Principal' %}<span class="badge-warning-soft"><i
+                            class="fas fa-crown me-1"></i>Principal</span>
+                    {% elif role == 'HR' %}<span class="badge-info-soft"><i class="fas fa-briefcase me-1"></i>HR</span>
+                    {% elif role == 'Teacher' %}<span class="badge-success-soft"><i
+                            class="fas fa-chalkboard-teacher me-1"></i>Teacher</span>
+                    {% else %}<span class="badge-purple-soft"><i class="fas fa-user-graduate me-1"></i>Student</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="page-content">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+    </div>
+    {% endwith %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

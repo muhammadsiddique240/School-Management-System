@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Leave Requests - EduSmart{% endblock %}
+{% block page_title %}<i class="fas fa-calendar-check me-2" style="color:#f59e0b;"></i>Pending Leave Requests{% endblock %}
+
+{% block content %}
+<div class="card content-card">
+    <div class="card-header"><i class="fas fa-list me-2"></i>Pending Applications</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Staff Member</th>
+                        <th>Role</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Reason</th>
+                        <th>Applied On</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td class="ps-4 fw-medium">{{ leave.user.get_full_name }}</td>
+                        <td><span class="badge-info-soft">{{ leave.user.role }}</span></td>
+                        <td>{{ leave.from_date }}</td>
+                        <td>{{ leave.to_date }}</td>
+                        <td style="max-width:200px;">{{ leave.reason|truncatewords:12 }}</td>
+                        <td>{{ leave.applied_on|date:"M d, Y" }}</td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'principal_leave_action' leave.pk 'approve' %}"
+                                class="btn btn-sm btn-success me-1" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            <a href="{% url 'principal_leave_action' leave.pk 'reject' %}" class="btn btn-sm btn-danger"
+                                title="Reject">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty-state"><i class="fas fa-inbox"></i>No pending leave requests.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

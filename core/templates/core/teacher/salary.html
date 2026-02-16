@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}My Salary - EduSmart{% endblock %}
+{% block page_title %}<i class="fas fa-file-invoice-dollar me-2" style="color:#10b981;"></i>My Salary{% endblock %}
+
+{% block content %}
+<div class="card content-card mb-4">
+    <div class="card-header"><i class="fas fa-info-circle me-2"></i>Salary Info</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p class="text-muted mb-1" style="font-size:0.82rem;">Basic Salary</p>
+                <h5 class="fw-bold">Rs {{ profile.basic_salary }}</h5>
+            </div>
+            <div class="col-md-4">
+                <p class="text-muted mb-1" style="font-size:0.82rem;">Designation</p>
+                <h5 class="fw-bold">{{ profile.designation }}</h5>
+            </div>
+            <div class="col-md-4">
+                <p class="text-muted mb-1" style="font-size:0.82rem;">Joining Date</p>
+                <h5 class="fw-bold">{{ profile.joining_date }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card content-card">
+    <div class="card-header"><i class="fas fa-history me-2"></i>Salary History</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Month</th>
+                        <th>Basic</th>
+                        <th>Deductions</th>
+                        <th>Bonus</th>
+                        <th>Net Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slip in slips %}
+                    <tr>
+                        <td class="ps-4 fw-medium">{{ slip.month }}</td>
+                        <td>Rs {{ slip.amount }}</td>
+                        <td class="text-danger">- Rs {{ slip.deductions }}</td>
+                        <td class="text-success">+ Rs {{ slip.bonus }}</td>
+                        <td><strong>Rs {{ slip.net_amount }}</strong></td>
+                        <td>
+                            {% if slip.status == 'Approved' %}
+                            <span class="badge-success-soft"><i class="fas fa-check me-1"></i>Approved</span>
+                            {% elif slip.status == 'Paid' %}
+                            <span class="badge-info-soft"><i class="fas fa-money-bill me-1"></i>Paid</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state"><i class="fas fa-inbox"></i>No salary slips available yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
