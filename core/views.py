@@ -463,6 +463,9 @@ def student_dashboard(request):
         'midterm_data': json.dumps(midterm_data),
         'final_data': json.dumps(final_data),
     }
+    return render(request, 'core/student/dashboard.html', context)
+    
+    
 @login_required
 @role_required('Teacher')
 def teacher_enter_results(request):
