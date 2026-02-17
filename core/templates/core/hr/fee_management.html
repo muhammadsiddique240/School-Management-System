@@ -10,8 +10,10 @@
             <div class="card-body d-flex align-items-center">
                 <i class="fas fa-coins fa-2x me-3" style="color:#2ed573;"></i>
                 <div>
-                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; opacity:0.6;">Total Collected</div>
-                    <div style="font-size:1.5rem; font-weight:800; color:#2ed573;">Rs. {{ total_collected|floatformat:0 }}</div>
+                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; opacity:0.6;">Total
+                        Collected</div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#2ed573;">Rs. {{ total_collected|floatformat:0
+                        }}</div>
                 </div>
             </div>
         </div>
@@ -21,8 +23,10 @@
             <div class="card-body d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle fa-2x me-3" style="color:#ff4757;"></i>
                 <div>
-                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; opacity:0.6;">Total Pending</div>
-                    <div style="font-size:1.5rem; font-weight:800; color:#ff4757;">Rs. {{ total_pending|floatformat:0 }}</div>
+                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; opacity:0.6;">Total
+                        Pending</div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#ff4757;">Rs. {{ total_pending|floatformat:0 }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -37,10 +41,10 @@
                 <label class="form-label">Filter by Status</label>
                 <select name="status" class="form-select" onchange="this.form.submit()">
                     <option value="">All</option>
-                    <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>Unpaid</option>
-                    <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid</option>
-                    <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
-                    <option value="Partial" {% if status_filter == 'Partial' %}selected{% endif %}>Partial</option>
+                    <option value="Unpaid" {% if status_filter=='Unpaid' %}selected{% endif %}>Unpaid</option>
+                    <option value="Paid" {% if status_filter=='Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Overdue" {% if status_filter=='Overdue' %}selected{% endif %}>Overdue</option>
+                    <option value="Partial" {% if status_filter=='Partial' %}selected{% endif %}>Partial</option>
                 </select>
             </div>
         </form>
@@ -51,7 +55,12 @@
 <div class="card content-card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <span><i class="fas fa-list me-2"></i>Fee Challans</span>
-        <span class="badge bg-secondary">{{ page_obj.paginator.count }} records</span>
+        <div>
+            <a href="{% url 'hr_generate_fees' %}" class="btn btn-sm btn-primary me-2">
+                <i class="fas fa-sync-alt me-1"></i>Generate Monthly Fees
+            </a>
+            <span class="badge bg-secondary">{{ page_obj.paginator.count }} records</span>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -74,24 +83,30 @@
                     <tr>
                         <td style="opacity:0.5;">{{ forloop.counter0|add:page_obj.start_index }}</td>
                         <td>
-                            <i class="fas fa-user-graduate me-1" style="color:#4facfe;"></i>{{ c.student.user.get_full_name }}
+                            <i class="fas fa-user-graduate me-1" style="color:#4facfe;"></i>{{
+                            c.student.user.get_full_name }}
                         </td>
                         <td>{{ c.student.class_grade }}</td>
                         <td>{{ c.month }}</td>
                         <td class="text-end">Rs. {{ c.total_amount|floatformat:0 }}</td>
                         <td class="text-end">Rs. {{ c.amount_paid|floatformat:0 }}</td>
-                        <td class="text-end fw-bold" style="color:{% if c.balance > 0 %}#ff4757{% else %}#2ed573{% endif %};">
+                        <td class="text-end fw-bold"
+                            style="color:{% if c.balance > 0 %}#ff4757{% else %}#2ed573{% endif %};">
                             Rs. {{ c.balance|floatformat:0 }}
                         </td>
                         <td class="text-center">
                             {% if c.status == 'Paid' %}
-                            <span class="badge rounded-pill" style="background:#2ed573; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
+                            <span class="badge rounded-pill"
+                                style="background:#2ed573; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
                             {% elif c.status == 'Partial' %}
-                            <span class="badge rounded-pill" style="background:#ffa502; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
+                            <span class="badge rounded-pill"
+                                style="background:#ffa502; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
                             {% elif c.status == 'Overdue' %}
-                            <span class="badge rounded-pill" style="background:#ff4757; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
+                            <span class="badge rounded-pill"
+                                style="background:#ff4757; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
                             {% else %}
-                            <span class="badge rounded-pill" style="background:#888; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
+                            <span class="badge rounded-pill"
+                                style="background:#888; font-weight:700; padding:4px 12px;">{{ c.status }}</span>
                             {% endif %}
                         </td>
                         <td>
@@ -99,8 +114,10 @@
                             <form method="post" action="{% url 'hr_collect_fee' c.id %}" class="d-inline">
                                 {% csrf_token %}
                                 <div class="input-group input-group-sm" style="width:180px;">
-                                    <input type="number" name="amount" class="form-control" placeholder="Amount" min="1" required>
-                                    <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
+                                    <input type="number" name="amount" class="form-control" placeholder="Amount" min="1"
+                                        required>
+                                    <button type="submit" class="btn btn-sm btn-success"><i
+                                            class="fas fa-check"></i></button>
                                 </div>
                             </form>
                             {% else %}
@@ -127,23 +144,27 @@
             <ul class="pagination pagination-sm mb-0">
                 {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo; Prev</a>
+                    <a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo;
+                        Prev</a>
                 </li>
                 {% endif %}
                 {% for num in page_obj.paginator.page_range %}
                 {% if page_obj.number == num %}
                 <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next &raquo;</a>
-                </li>
-                {% endif %}
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %} <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next
+                            &raquo;</a>
+                    </li>
+                    {% endif %}
             </ul>
         </nav>
     </div>

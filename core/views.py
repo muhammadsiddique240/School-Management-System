@@ -551,6 +551,26 @@ def hr_fee_management(request):
 
 @login_required
 @role_required('HR')
+def hr_generate_fees(request):
+    from django.core.management import call_command
+    import io
+    
+    out = io.StringIO()
+    try:
+        call_command('generate_fees', stdout=out)
+        result = out.getvalue()
+        if "Errors" in result and "Errors: 0" not in result:
+             messages.warning(request, f'Fees generated with some warnings: {result}')
+        else:
+             messages.success(request, f'Fees generated successfully! {result}')
+    except Exception as e:
+        messages.error(request, f'Error generating fees: {str(e)}')
+    
+    return redirect('hr_fee_management')
+
+
+@login_required
+@role_required('HR')
 def hr_collect_fee(request, challan_id):
     from core.models import FeeChallan
     challan = get_object_or_404(FeeChallan, pk=challan_id)
