@@ -41,10 +41,10 @@
                 <label class="form-label">Filter by Status</label>
                 <select name="status" class="form-select" onchange="this.form.submit()">
                     <option value="">All</option>
-                    <option value="Unpaid" {% if status_filter=='Unpaid' %}selected{% endif %}>Unpaid</option>
-                    <option value="Paid" {% if status_filter=='Paid' %}selected{% endif %}>Paid</option>
-                    <option value="Overdue" {% if status_filter=='Overdue' %}selected{% endif %}>Overdue</option>
-                    <option value="Partial" {% if status_filter=='Partial' %}selected{% endif %}>Partial</option>
+                    <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+                    <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
+                    <option value="Partial" {% if status_filter == 'Partial' %}selected{% endif %}>Partial</option>
                 </select>
             </div>
         </form>
