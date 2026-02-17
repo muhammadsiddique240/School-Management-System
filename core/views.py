@@ -70,11 +70,103 @@ def principal_dashboard(request):
     generated_slips = SalarySlip.objects.filter(status='Generated').count()
     total_teachers = TeacherProfile.objects.count()
     total_students = User.objects.filter(role='Student').count()
+
+    # ── Fee Revenue Data ──
+    from core.models import FeeChallan, DailyAttendance, StudentProfile, Result
+    from django.db.models import Sum, Count, Q
+    import json
+
+    total_revenue = FeeChallan.objects.filter(status='Paid').aggregate(t=Sum('amount_paid'))['t'] or 0
+    pending_fees = FeeChallan.objects.filter(status__in=['Unpaid', 'Overdue']).aggregate(t=Sum('total_amount'))['t'] or 0
+    overdue_count = FeeChallan.objects.filter(status='Overdue').count()
+
+    # ── Attendance Today ──
+    today = datetime.datetime.now().date()
+    today_att = DailyAttendance.objects.filter(date=today)
+    today_present = today_att.filter(status='P').count()
+    today_absent = today_att.filter(status='A').count()
+    today_total = today_att.count()
+    attendance_pct = round((today_present / today_total) * 100, 1) if today_total > 0 else 0
+
+    # ── Attendance Trend (last 10 school days for chart) ──
+    from django.db.models.functions import TruncDate
+    att_trend = (
+        DailyAttendance.objects
+        .values('date')
+        .annotate(
+            present=Count('id', filter=Q(status='P')),
+            absent=Count('id', filter=Q(status='A')),
+            total=Count('id'),
+        )
+        .order_by('-date')[:10]
+    )
+    att_trend = list(reversed(list(att_trend)))
+    att_labels = [d['date'].strftime('%d %b') for d in att_trend]
+    att_present_data = [d['present'] for d in att_trend]
+    att_absent_data = [d['absent'] for d in att_trend]
+
+    # ── Fee Collection by Month (for chart) ──
+    fee_months = FeeChallan.objects.values('month').annotate(
+        collected=Sum('amount_paid'),
+        total=Sum('total_amount'),
+    ).order_by('month')
+    fee_labels = [f['month'] for f in fee_months]
+    fee_collected = [float(f['collected'] or 0) for f in fee_months]
+    fee_total = [float(f['total'] or 0) for f in fee_months]
+
+    # ── At-Risk Students (attendance < 75% or avg grade < 50%) ──
+    at_risk_students = []
+    for sp in StudentProfile.objects.select_related('user', 'class_grade').all()[:50]:
+        att_records = DailyAttendance.objects.filter(student=sp)
+        total_days = att_records.count()
+        present_days = att_records.filter(status='P').count()
+        att_rate = round((present_days / total_days) * 100, 1) if total_days > 0 else 100
+
+        results = Result.objects.filter(student=sp)
+        avg_marks = 0
+        if results.exists():
+            total_pct = sum(r.percentage for r in results)
+            avg_marks = round(total_pct / results.count(), 1)
+
+        risk_score = 0
+        if att_rate < 75:
+            risk_score += 40
+        if avg_marks < 50:
+            risk_score += 40
+        if att_rate < 60:
+            risk_score += 20
+
+        if risk_score >= 40:
+            at_risk_students.append({
+                'name': sp.user.get_full_name(),
+                'class': str(sp.class_grade),
+                'attendance': att_rate,
+                'avg_grade': avg_marks,
+                'risk': 'High' if risk_score >= 60 else 'Medium',
+            })
+
     context = {
         'pending_leaves': pending_leaves,
         'generated_slips': generated_slips,
         'total_teachers': total_teachers,
         'total_students': total_students,
+        # Fee
+        'total_revenue': total_revenue,
+        'pending_fees': pending_fees,
+        'overdue_count': overdue_count,
+        # Attendance
+        'attendance_pct': attendance_pct,
+        'today_present': today_present,
+        'today_absent': today_absent,
+        # Charts
+        'att_labels': json.dumps(att_labels),
+        'att_present_data': json.dumps(att_present_data),
+        'att_absent_data': json.dumps(att_absent_data),
+        'fee_labels': json.dumps(fee_labels),
+        'fee_collected': json.dumps(fee_collected),
+        'fee_total': json.dumps(fee_total),
+        # AI
+        'at_risk_students': at_risk_students,
     }
     return render(request, 'core/principal/dashboard.html', context)
 
@@ -312,7 +404,157 @@ def teacher_apply_leave(request):
 @login_required
 @role_required('Student')
 def student_dashboard(request):
-    return render(request, 'core/student/dashboard.html')
+    from core.models import StudentProfile, FeeChallan, DailyAttendance, Result, ExamType
+    from django.db.models import Q
+    import json
+
+    try:
+        profile = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        return render(request, 'core/student/dashboard.html', {'no_profile': True})
+
+    # Fee summary
+    challans = FeeChallan.objects.filter(student=profile)
+    unpaid = challans.filter(status__in=['Unpaid', 'Overdue'])
+
+    # Attendance summary
+    att_records = DailyAttendance.objects.filter(student=profile)
+    total_days = att_records.count()
+    present_days = att_records.filter(status='P').count()
+    absent_days = att_records.filter(status='A').count()
+    att_pct = round((present_days / total_days) * 100, 1) if total_days > 0 else 0
+
+    # Results
+    results = Result.objects.filter(student=profile).select_related('subject', 'exam_type')
+    subjects_map = {}
+    for r in results:
+        key = r.subject.name
+        if key not in subjects_map:
+            subjects_map[key] = {}
+        subjects_map[key][r.exam_type.name] = {
+            'marks': float(r.marks_obtained),
+            'max': r.exam_type.max_marks,
+            'pct': r.percentage,
+            'grade': r.grade,
+            'weighted': r.weighted_score,
+        }
+
+    # Chart data
+    subject_labels = list(subjects_map.keys())
+    midterm_data = [subjects_map[s].get('Midterm', {}).get('pct', 0) for s in subject_labels]
+    final_data = [subjects_map[s].get('Final', {}).get('pct', 0) for s in subject_labels]
+
+    context = {
+        'profile': profile,
+        'challans': challans[:5],
+        'unpaid_count': unpaid.count(),
+        'total_days': total_days,
+        'present_days': present_days,
+        'absent_days': absent_days,
+        'att_pct': att_pct,
+        'subjects_map': subjects_map,
+        'subject_labels': json.dumps(subject_labels),
+        'midterm_data': json.dumps(midterm_data),
+        'final_data': json.dumps(final_data),
+    }
+    return render(request, 'core/student/dashboard.html', context)
+
+
+# ─────────────────────────────────────────────
+# ATTENDANCE — Bulk Mark (for Teachers)
+# ─────────────────────────────────────────────
+
+@login_required
+@role_required('Teacher')
+def teacher_mark_attendance(request):
+    from core.models import StudentProfile, DailyAttendance
+    classes = ClassGrade.objects.all()
+    class_id = request.GET.get('class_id') or request.POST.get('class_id')
+    selected_class = None
+    students = []
+    today = datetime.datetime.now().date()
+
+    if class_id:
+        selected_class = ClassGrade.objects.filter(pk=class_id).first()
+        if selected_class:
+            students = StudentProfile.objects.filter(class_grade=selected_class).select_related('user')
+
+    if request.method == 'POST' and selected_class:
+        saved = 0
+        for sp in students:
+            status = request.POST.get(f'att_{sp.id}', 'P')
+            DailyAttendance.objects.update_or_create(
+                student=sp, date=today,
+                defaults={
+                    'status': status,
+                    'marked_by': request.user,
+                }
+            )
+            saved += 1
+        messages.success(request, f'Attendance saved for {saved} students in {selected_class}!')
+        return redirect(f'/teacher/attendance/?class_id={class_id}')
+
+    # Check which are already marked
+    existing = {}
+    if selected_class:
+        for att in DailyAttendance.objects.filter(student__class_grade=selected_class, date=today):
+            existing[att.student_id] = att.status
+
+    context = {
+        'classes': classes,
+        'selected_class': selected_class,
+        'students': students,
+        'today': today,
+        'existing': existing,
+    }
+    return render(request, 'core/teacher/mark_attendance.html', context)
+
+
+# ─────────────────────────────────────────────
+# HR — Fee Management
+# ─────────────────────────────────────────────
+
+@login_required
+@role_required('HR')
+def hr_fee_management(request):
+    from core.models import FeeChallan, FeeStructure, StudentProfile
+    from django.db.models import Sum
+
+    challans = FeeChallan.objects.select_related('student__user', 'student__class_grade').all()
+
+    # Filters
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        challans = challans.filter(status=status_filter)
+
+    total_collected = challans.filter(status='Paid').aggregate(t=Sum('amount_paid'))['t'] or 0
+    total_pending = challans.filter(status__in=['Unpaid', 'Overdue']).aggregate(t=Sum('total_amount'))['t'] or 0
+
+    context = {
+        'challans': challans[:100],
+        'total_collected': total_collected,
+        'total_pending': total_pending,
+        'status_filter': status_filter,
+    }
+    return render(request, 'core/hr/fee_management.html', context)
+
+
+@login_required
+@role_required('HR')
+def hr_collect_fee(request, challan_id):
+    from core.models import FeeChallan
+    challan = get_object_or_404(FeeChallan, pk=challan_id)
+    if request.method == 'POST':
+        amount = request.POST.get('amount', 0)
+        try:
+            amount = float(amount)
+        except ValueError:
+            amount = 0
+        challan.amount_paid = challan.amount_paid + int(amount)
+        challan.paid_date = datetime.datetime.now().date()
+        challan.save()
+        messages.success(request, f'Rs. {amount:.0f} collected from {challan.student.user.get_full_name()}.')
+    return redirect('hr_fee_management')
 
 
 @login_required

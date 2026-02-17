@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, ClassGrade, Subject, TeacherProfile, Timetable, SalarySlip, LeaveApplication
+from .models import (
+    User, ClassGrade, Subject, TeacherProfile, Timetable, SalarySlip, LeaveApplication,
+    StudentProfile, FeeStructure, FeeChallan, DailyAttendance, ExamType, Result
+)
 
 
 @admin.register(User)
@@ -47,3 +50,44 @@ class SalarySlipAdmin(admin.ModelAdmin):
 class LeaveApplicationAdmin(admin.ModelAdmin):
     list_display = ('user', 'from_date', 'to_date', 'status', 'applied_on')
     list_filter = ('status',)
+
+
+# ── NEW MODELS ─────────────────────────────────────────────
+
+@admin.register(StudentProfile)
+class StudentProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'class_grade', 'roll_number', 'parent_name', 'parent_phone')
+    list_filter = ('class_grade',)
+    search_fields = ('user__first_name', 'user__last_name', 'roll_number')
+
+
+@admin.register(FeeStructure)
+class FeeStructureAdmin(admin.ModelAdmin):
+    list_display = ('class_grade', 'monthly_tuition', 'late_fine_per_day', 'due_day')
+
+
+@admin.register(FeeChallan)
+class FeeChallanAdmin(admin.ModelAdmin):
+    list_display = ('student', 'month', 'total_amount', 'amount_paid', 'status', 'due_date')
+    list_filter = ('status', 'month')
+    search_fields = ('student__user__first_name', 'student__user__last_name')
+
+
+@admin.register(DailyAttendance)
+class DailyAttendanceAdmin(admin.ModelAdmin):
+    list_display = ('student', 'date', 'status', 'marked_by', 'sms_sent')
+    list_filter = ('status', 'date')
+    search_fields = ('student__user__first_name',)
+
+
+@admin.register(ExamType)
+class ExamTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'weightage', 'max_marks', 'academic_year')
+
+
+@admin.register(Result)
+class ResultAdmin(admin.ModelAdmin):
+    list_display = ('student', 'subject', 'exam_type', 'marks_obtained', 'grade')
+    list_filter = ('exam_type', 'subject')
+    search_fields = ('student__user__first_name', 'student__user__last_name')
+

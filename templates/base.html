@@ -496,16 +496,20 @@
                     href="{% url 'hr_create_timetable' %}">
                     <i class="fas fa-calendar-alt"></i> Timetable
                 </a>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'hr_print_timetable' %}active{% endif %}"
-                    href="{% url 'hr_print_timetable' %}">
-                    <i class="fas fa-print"></i> Print Timetable
-                </a>
-            </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'hr_print_timetable' %}active{% endif %}"
+                        href="{% url 'hr_print_timetable' %}">
+                        <i class="fas fa-print"></i> Print Timetable
+                    </a>
+                </li>
                 <div class="nav-section-label">Finance</div>
                 <a class="nav-link {% if request.resolver_match.url_name == 'hr_payroll' %}active{% endif %}"
                     href="{% url 'hr_payroll' %}">
                     <i class="fas fa-money-check-alt"></i> Payroll
+                </a>
+                <a class="nav-link {% if request.resolver_match.url_name == 'hr_fee_management' %}active{% endif %}"
+                    href="{% url 'hr_fee_management' %}">
+                    <i class="fas fa-file-invoice-dollar"></i> Fee Management
                 </a>
                 {% endif %}
 
@@ -523,6 +527,11 @@
                 <a class="nav-link {% if request.resolver_match.url_name == 'teacher_apply_leave' %}active{% endif %}"
                     href="{% url 'teacher_apply_leave' %}">
                     <i class="fas fa-paper-plane"></i> Apply Leave
+                </a>
+                <div class="nav-section-label">Attendance</div>
+                <a class="nav-link {% if request.resolver_match.url_name == 'teacher_mark_attendance' %}active{% endif %}"
+                    href="{% url 'teacher_mark_attendance' %}">
+                    <i class="fas fa-clipboard-check"></i> Mark Attendance
                 </a>
                 {% endif %}
 

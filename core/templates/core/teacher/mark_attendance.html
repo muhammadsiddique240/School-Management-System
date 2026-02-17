@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block title %}Mark Attendance - EduSmart{% endblock %}
+{% block page_title %}<i class="fas fa-clipboard-check me-2" style="color:#4facfe;"></i>Mark Attendance{% endblock %}
+
+{% block content %}
+<style>
+    .att-btn {
+        border: none;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .att-btn.active-P {
+        background: #2ed573;
+        color: #fff;
+    }
+
+    .att-btn.active-A {
+        background: #ff4757;
+        color: #fff;
+    }
+
+    .att-btn.active-L {
+        background: #ffa502;
+        color: #fff;
+    }
+
+    .att-btn.active-E {
+        background: #7c8aff;
+        color: #fff;
+    }
+
+    .att-btn:not([class*="active"]) {
+        background: rgba(255, 255, 255, 0.08);
+        color: #aaa;
+    }
+
+    .att-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .student-row {
+        transition: background 0.2s;
+    }
+
+    .student-row:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+</style>
+
+<!-- Class Selector -->
+<div class="card content-card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label"><i class="fas fa-school me-1"></i>Select Class</label>
+                <select name="class_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Choose Class --</option>
+                    {% for cls in classes %}
+                    <option value="{{ cls.id }}" {% if selected_class and cls.id == selected_class.id %}selected{% endif %}>{{ cls }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <div class="fw-bold" style="font-size:0.85rem; color:#4facfe;">
+                    <i class="fas fa-calendar-day me-1"></i>Date: {{ today|date:"d M Y (l)" }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if selected_class and students %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="class_id" value="{{ selected_class.id }}">
+
+    <div class="card content-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-users me-2"></i>{{ selected_class }} — {{ students|length }} Students</span>
+            <button type="button" class="btn btn-sm btn-outline-success" onclick="markAll('P')">
+                <i class="fas fa-check-double me-1"></i>Mark All Present
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0" style="color:inherit;">
+                <thead>
+                    <tr style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; opacity:0.7;">
+                        <th style="width:50px;">#</th>
+                        <th>Student Name</th>
+                        <th>Roll No</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr class="student-row">
+                        <td style="opacity:0.5;">{{ forloop.counter }}</td>
+                        <td><i class="fas fa-user-graduate me-2" style="color:#4facfe;"></i>{{ s.user.get_full_name }}
+                        </td>
+                        <td style="opacity:0.6;">{{ s.roll_number }}</td>
+                        <td class="text-center">
+                            <input type="hidden" name="att_{{ s.id }}" id="att_{{ s.id }}" value="P">
+                            <div class="btn-group">
+                                <button type="button" class="att-btn" data-sid="{{ s.id }}" data-val="P"
+                                    onclick="setAtt(this)">P</button>
+                                <button type="button" class="att-btn" data-sid="{{ s.id }}" data-val="A"
+                                    onclick="setAtt(this)">A</button>
+                                <button type="button" class="att-btn" data-sid="{{ s.id }}" data-val="L"
+                                    onclick="setAtt(this)">L</button>
+                                <button type="button" class="att-btn" data-sid="{{ s.id }}" data-val="E"
+                                    onclick="setAtt(this)">E</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary rounded-3">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+        <button type="submit" class="btn btn-role btn-lg rounded-3">
+            <i class="fas fa-save me-1"></i>Save Attendance
+        </button>
+    </div>
+</form>
+
+<script>
+    // Initialize buttons based on existing data
+    document.addEventListener('DOMContentLoaded', function () {
+        {% for sid, status in existing.items %}
+        document.getElementById('att_{{ sid }}').value = '{{ status }}';
+        document.querySelectorAll('[data-sid="{{ sid }}"]').forEach(btn => {
+            if (btn.dataset.val === '{{ status }}') btn.classList.add('active-{{ status }}');
+        });
+        {% endfor %}
+
+        // Default: Mark all as Present if no existing data
+        {% if not existing %}
+        markAll('P');
+        {% endif %}
+    });
+
+    function setAtt(btn) {
+        const sid = btn.dataset.sid;
+        const val = btn.dataset.val;
+        document.getElementById('att_' + sid).value = val;
+        // Clear all siblings
+        btn.parentElement.querySelectorAll('.att-btn').forEach(b => {
+            b.className = 'att-btn';
+        });
+        btn.classList.add('active-' + val);
+    }
+
+    function markAll(val) {
+        document.querySelectorAll('.att-btn[data-val="' + val + '"]').forEach(btn => {
+            setAtt(btn);
+        });
+    }
+</script>
+
+{% elif selected_class %}
+<div class="card content-card">
+    <div class="card-body text-center py-5" style="opacity:0.6;">
+        <i class="fas fa-users-slash fa-3x mb-3" style="color:#ffa502;"></i>
+        <h5>No students enrolled in {{ selected_class }}</h5>
+    </div>
+</div>
+{% else %}
+<div class="card content-card">
+    <div class="card-body text-center py-5" style="opacity:0.6;">
+        <i class="fas fa-hand-pointer fa-3x mb-3" style="color:#4facfe;"></i>
+        <h5>Select a class to begin marking attendance</h5>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
