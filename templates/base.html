@@ -439,18 +439,58 @@
             margin-bottom: 0.5rem;
             display: block;
         }
+
+        /* MOBILE RESPONSIVENESS */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                left: -260px;
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.show {
+                transform: translateX(260px);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .top-bar {
+                padding: 0.75rem 1.25rem;
+            }
+
+            .page-content {
+                padding: 1rem 1.25rem;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 95;
+                backdrop-filter: blur(2px);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
     </style>
 </head>
 
 <body>
     {% with role=request.user.role|default:"Student" %}
     <div class="role-{{ role|lower }}">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="brand">
-                <span class="brand-icon" {% if role == 'Principal' %}style="background: var(--principal-gradient);" {%
-                    elif role == 'HR' %}style="background: var(--hr-gradient);" {% elif role == 'Teacher'
+                <span class="brand-icon" {% if role == 'Principal' %}style="background: var(--principal-gradient);" {% elif role == 'HR' %}style="background: var(--hr-gradient);" {% elif role == 'Teacher'
                     %}style="background: var(--teacher-gradient);" {% else
                     %}style="background: var(--student-gradient);" {% endif %}>
                     <i class="fas fa-graduation-cap"></i>
@@ -552,8 +592,7 @@
             <div class="sidebar-footer">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="user-info">
-                        <div class="avatar" {% if role == 'Principal' %}style="background: var(--principal-gradient);" {%
-                            elif role == 'HR' %}style="background: var(--hr-gradient);" {% elif role == 'Teacher'
+                        <div class="avatar" {% if role == 'Principal' %}style="background: var(--principal-gradient);" {% elif role == 'HR' %}style="background: var(--hr-gradient);" {% elif role == 'Teacher'
                             %}style="background: var(--teacher-gradient);" {% else
                             %}style="background: var(--student-gradient);" {% endif %}>
                             {{ request.user.first_name|first|default:"U" }}
@@ -573,7 +612,12 @@
         <!-- TOP BAR -->
         <div class="main-content">
             <div class="top-bar">
-                <h5>{% block page_title %}Dashboard{% endblock %}</h5>
+                <div class="d-flex align-items-center">
+                    <button class="btn d-lg-none me-3 p-0 border-0" id="sidebarToggle" style="color: inherit;">
+                        <i class="fas fa-bars fs-4"></i>
+                    </button>
+                    <h5>{% block page_title %}Dashboard{% endblock %}</h5>
+                </div>
                 <div class="d-flex align-items-center gap-3">
                     <span class="text-muted" style="font-size:0.85rem;">
                         <i class="fas fa-calendar-alt me-1"></i>{% now "l, F j, Y" %}
@@ -605,6 +649,16 @@
     {% endwith %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function () {
+            document.querySelector('.sidebar').classList.toggle('show');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
+        });
+        document.getElementById('sidebarOverlay').addEventListener('click', function () {
+            document.querySelector('.sidebar').classList.remove('show');
+            this.classList.remove('show');
+        });
+    </script>
 </body>
 
 </html>

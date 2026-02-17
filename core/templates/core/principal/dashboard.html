@@ -5,329 +5,338 @@
 {% block content %}
 <style>
     .kpi-card {
-        border-radius: 16px;
+        border-radius: 18px;
         padding: 24px;
         color: #fff;
         position: relative;
         overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 145px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: none;
     }
 
     .kpi-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     }
 
     .kpi-card .kpi-icon {
         position: absolute;
-        right: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 3rem;
-        opacity: 0.2;
+        right: 12px;
+        top: 12px;
+        font-size: 3.5rem;
+        opacity: 0.15;
     }
 
     .kpi-card .kpi-value {
-        font-size: 2rem;
+        font-size: 2.25rem;
         font-weight: 800;
-        letter-spacing: -0.5px;
+        letter-spacing: -1px;
+        margin-bottom: 0;
+        line-height: 1.2;
     }
 
     .kpi-card .kpi-label {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.85;
+        letter-spacing: 1.5px;
+        font-weight: 700;
+        opacity: 0.9;
+    }
+
+    .kpi-card .kpi-subtext {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        font-weight: 500;
+        margin-top: 4px;
     }
 
     .kpi-revenue {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
     }
 
     .kpi-pending {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
     }
 
     .kpi-attendance {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     }
 
     .kpi-teachers {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     }
 
     .kpi-students {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
     }
 
     .kpi-leaves {
-        background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .kpi-salary {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
     }
 
     .chart-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
+        background: white;
+        border-radius: 18px;
         padding: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        height: 100%;
     }
 
     .chart-card h6 {
         font-weight: 700;
-        margin-bottom: 16px;
-        font-size: 0.85rem;
+        margin-bottom: 20px;
+        color: #1e293b;
+        font-size: 0.9rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    .risk-badge-high {
-        background: linear-gradient(135deg, #ff4757, #c0392b);
-        color: #fff;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    .risk-badge-medium {
-        background: linear-gradient(135deg, #ffa502, #e67e22);
-        color: #fff;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
     .ai-section {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
-        border: 1px solid rgba(102, 126, 234, 0.2);
-        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
         padding: 24px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
     }
 
-    .ai-section .ai-badge {
-        background: linear-gradient(135deg, #667eea, #764ba2);
+    .ai-badge {
+        background: #4f46e5;
         color: #fff;
         padding: 4px 12px;
         border-radius: 20px;
         font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
     }
 </style>
 
-<!-- KPI Cards Row 1: Revenue & Finance -->
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="kpi-card kpi-revenue">
-            <div class="kpi-label">Total Revenue Collected</div>
-            <div class="kpi-value">Rs. {{ total_revenue|floatformat:0 }}</div>
-            <i class="fas fa-coins kpi-icon"></i>
+<!-- KPI Cards Row 1: Finance & Trends -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-4 col-md-4">
+        <div class="kpi-card kpi-revenue h-100">
+            <div>
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value">Rs. {{ total_revenue|default:0|floatformat:0 }}</div>
+            </div>
+            <div class="kpi-subtext">Current Session Total</div>
+            <i class="fas fa-wallet kpi-icon"></i>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="kpi-card kpi-pending">
-            <div class="kpi-label">Pending / Overdue Fees</div>
-            <div class="kpi-value">Rs. {{ pending_fees|floatformat:0 }}</div>
-            <small>{{ overdue_count }} overdue challan(s)</small>
-            <i class="fas fa-exclamation-triangle kpi-icon"></i>
+    <div class="col-xl-4 col-md-4">
+        <div class="kpi-card kpi-pending h-100">
+            <div>
+                <div class="kpi-label">Pending / Overdue</div>
+                <div class="kpi-value">Rs. {{ pending_fees|default:0|floatformat:0 }}</div>
+            </div>
+            <div class="kpi-subtext">{{ overdue_count|default:0 }} overdue challan(s)</div>
+            <i class="fas fa-exclamation-circle kpi-icon"></i>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="kpi-card kpi-attendance">
-            <div class="kpi-label">Today's Attendance</div>
-            <div class="kpi-value">{{ attendance_pct }}%</div>
-            <small>{{ today_present }} present · {{ today_absent }} absent</small>
-            <i class="fas fa-user-check kpi-icon"></i>
+    <div class="col-xl-4 col-md-4">
+        <div class="kpi-card kpi-attendance h-100">
+            <div>
+                <div class="kpi-label">Attendance Rate</div>
+                <div class="kpi-value">{{ attendance_pct|default:0 }}%</div>
+            </div>
+            <div class="kpi-subtext">{{ today_present|default:0 }} Present · {{ today_absent|default:0 }} Absent</div>
+            <i class="fas fa-users-check kpi-icon"></i>
         </div>
     </div>
 </div>
 
-<!-- KPI Cards Row 2: School Stats -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="kpi-card kpi-teachers">
-            <div class="kpi-label">Total Teachers</div>
-            <div class="kpi-value">{{ total_teachers }}</div>
+<!-- KPI Cards Row 2: Operational Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card kpi-teachers h-100">
+            <div>
+                <div class="kpi-label">Faculty</div>
+                <div class="kpi-value">{{ total_teachers|default:0 }}</div>
+            </div>
+            <div class="kpi-subtext">Total Active Staff</div>
             <i class="fas fa-chalkboard-teacher kpi-icon"></i>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="kpi-card kpi-students">
-            <div class="kpi-label">Total Students</div>
-            <div class="kpi-value">{{ total_students }}</div>
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card kpi-students h-100">
+            <div>
+                <div class="kpi-label">Students</div>
+                <div class="kpi-value">{{ total_students|default:0 }}</div>
+            </div>
+            <div class="kpi-subtext">Total Enrolled</div>
             <i class="fas fa-user-graduate kpi-icon"></i>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="kpi-card kpi-leaves">
-            <div class="kpi-label">Pending Leaves</div>
-            <div class="kpi-value">{{ pending_leaves }}</div>
-            <i class="fas fa-calendar-check kpi-icon"></i>
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card kpi-leaves h-100">
+            <div>
+                <div class="kpi-label">Leave Applied</div>
+                <div class="kpi-value">{{ pending_leaves|default:0 }}</div>
+            </div>
+            <div class="kpi-subtext">Awaiting Approval</div>
+            <i class="fas fa-calendar-alt kpi-icon"></i>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="kpi-card" style="background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);">
-            <div class="kpi-label">Salary Slips to Approve</div>
-            <div class="kpi-value">{{ generated_slips }}</div>
+    <div class="col-xl-3 col-md-6">
+        <div class="kpi-card kpi-salary h-100">
+            <div>
+                <div class="kpi-label">Salary Slips</div>
+                <div class="kpi-value">{{ generated_slips|default:0 }}</div>
+            </div>
+            <div class="kpi-subtext">Pending Selection</div>
             <i class="fas fa-file-invoice-dollar kpi-icon"></i>
         </div>
     </div>
 </div>
 
 <!-- Charts Row -->
-<div class="row g-3 mb-4">
-    <div class="col-md-7">
+<div class="row g-4 mb-4">
+    <div class="col-xl-7 col-md-12">
         <div class="chart-card">
-            <h6><i class="fas fa-chart-area me-2" style="color:#4facfe;"></i>Attendance Trend (Last 10 Days)</h6>
-            <canvas id="attendanceChart" height="220"></canvas>
+            <h6><i class="fas fa-chart-area me-2 text-primary"></i>Attendance Trend (Last 10 Days)</h6>
+            <div style="height: 250px; position: relative;">
+                <canvas id="attendanceChart"></canvas>
+            </div>
         </div>
     </div>
-    <div class="col-md-5">
+    <div class="col-xl-5 col-md-12">
         <div class="chart-card">
-            <h6><i class="fas fa-chart-bar me-2" style="color:#667eea;"></i>Fee Collection by Month</h6>
-            <canvas id="feeChart" height="220"></canvas>
+            <h6><i class="fas fa-chart-bar me-2 text-primary"></i>Fee Collection by Month</h6>
+            <div style="height: 250px; position: relative;">
+                <canvas id="feeChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- AI-Powered At-Risk Students -->
-<div class="row g-3 mb-4">
-    <div class="col-12">
-        <div class="ai-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="mb-0" style="font-weight:700;">
-                    <i class="fas fa-robot me-2" style="color:#667eea;"></i>AI Insights: At-Risk Students
-                </h6>
-                <span class="ai-badge"><i class="fas fa-brain me-1"></i> AI Powered</span>
-            </div>
-            {% if at_risk_students %}
-            <div class="table-responsive">
-                <table class="table table-sm table-hover align-middle" style="color:inherit;">
-                    <thead>
-                        <tr style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; opacity:0.7;">
-                            <th>Student</th>
-                            <th>Class</th>
-                            <th>Attendance</th>
-                            <th>Avg Grade</th>
-                            <th>Risk Level</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for s in at_risk_students %}
-                        <tr>
-                            <td><i class="fas fa-user me-1"></i>{{ s.name }}</td>
-                            <td>{{ s.class }}</td>
-                            <td>
-                                <span
-                                    style="color:{% if s.attendance < 60 %}#ff4757{% elif s.attendance < 75 %}#ffa502{% else %}#2ed573{% endif %}; font-weight:700;">
-                                    {{ s.attendance }}%
-                                </span>
-                            </td>
-                            <td>
-                                <span
-                                    style="color:{% if s.avg_grade < 40 %}#ff4757{% elif s.avg_grade < 60 %}#ffa502{% else %}#2ed573{% endif %}; font-weight:700;">
-                                    {{ s.avg_grade }}%
-                                </span>
-                            </td>
-                            <td>
-                                <span class="risk-badge-{% if s.risk == 'High' %}high{% else %}medium{% endif %}">
-                                    <i class="fas fa-{% if s.risk == 'High' %}exclamation-circle{% else %}exclamation{% endif %} me-1"></i>{{ s.risk }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="text-center py-4" style="opacity:0.6;">
-                <i class="fas fa-check-circle fa-2x mb-2" style="color:#2ed573;"></i>
-                <p>No at-risk students detected. All students are performing well!</p>
-            </div>
-            {% endif %}
-        </div>
+<div class="ai-section mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h6 class="mb-0 fw-bold">
+            <i class="fas fa-robot me-2 text-primary"></i>AI Insights: At-Risk Students
+        </h6>
+        <span class="ai-badge"><i class="fas fa-brain me-1"></i> AI Powered</span>
     </div>
+    {% if at_risk_students %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-3">Student</th>
+                    <th>Class</th>
+                    <th>Risk Factors</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in at_risk_students %}
+                <tr>
+                    <td class="ps-3 fw-bold">{{ s.name }}</td>
+                    <td>{{ s.class }}</td>
+                    <td>
+                        {% for factor in s.factors %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle mb-1">{{ factor
+                            }}</span>
+                        {% endfor %}
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary rounded-pill">
+                            <i class="fas fa-envelope me-1"></i>Contact Parent
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-3">
+            <i class="fas fa-check-circle fa-3x text-success opacity-75"></i>
+        </div>
+        <h6 class="text-muted fw-bold">No high-risk students detected.</h6>
+        <p class="text-muted small">All systems show students are performing within normal parameters.</p>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Quick Actions -->
-<div class="row g-3">
+<div class="row g-4">
     <div class="col-md-4">
-        <a href="{% url 'principal_leave_requests' %}" class="card content-card text-decoration-none"
-            style="transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'"
-            onmouseout="this.style.transform='scale(1)'">
+        <a href="{% url 'principal_leave_requests' %}" class="card content-card text-decoration-none border-0 h-100"
+            style="transition: all 0.2s;">
             <div class="card-body text-center py-4">
-                <i class="fas fa-calendar-check fa-2x mb-2" style="color:#f59e0b;"></i>
+                <i class="fas fa-calendar-check fa-2x mb-3 text-warning"></i>
                 <h6 class="fw-bold mb-1">Leave Requests</h6>
-                <small style="opacity:0.7;">{{ pending_leaves }} pending</small>
+                <div class="text-muted small">{{ pending_leaves|default:0 }} pending approval</div>
             </div>
         </a>
     </div>
     <div class="col-md-4">
-        <a href="{% url 'principal_salary_approval' %}" class="card content-card text-decoration-none"
-            style="transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'"
-            onmouseout="this.style.transform='scale(1)'">
+        <a href="{% url 'principal_salary_approval' %}" class="card content-card text-decoration-none border-0 h-100">
             <div class="card-body text-center py-4">
-                <i class="fas fa-money-check-alt fa-2x mb-2" style="color:#667eea;"></i>
+                <i class="fas fa-money-check-alt fa-2x mb-3 text-primary"></i>
                 <h6 class="fw-bold mb-1">Salary Approval</h6>
-                <small style="opacity:0.7;">{{ generated_slips }} to approve</small>
+                <div class="text-muted small">{{ generated_slips|default:0 }} to approve</div>
             </div>
         </a>
     </div>
     <div class="col-md-4">
-        <a href="#" class="card content-card text-decoration-none" style="transition: transform 0.2s;"
-            onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        <a href="#" class="card content-card text-decoration-none border-0 h-100">
             <div class="card-body text-center py-4">
-                <i class="fas fa-chart-pie fa-2x mb-2" style="color:#f093fb;"></i>
+                <i class="fas fa-chart-pie fa-2x mb-3 text-info"></i>
                 <h6 class="fw-bold mb-1">Fee Reports</h6>
-                <small style="opacity:0.7;">View detailed analytics</small>
+                <div class="text-muted small">View detailed analytics</div>
             </div>
         </a>
     </div>
 </div>
 
-<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
     // Attendance Trend Chart
     const attCtx = document.getElementById('attendanceChart').getContext('2d');
     new Chart(attCtx, {
         type: 'line',
         data: {
             labels: {{ att_labels| safe }},
-        datasets: [
-        {
+        datasets: [{
             label: 'Present',
             data: {{ att_present_data| safe }},
-        borderColor: '#2ed573',
-        backgroundColor: 'rgba(46, 213, 115, 0.1)',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
         fill: true,
         tension: 0.4,
         pointRadius: 4,
-        pointBackgroundColor: '#2ed573',
-        borderWidth: 2,
-                },
-        {
+        borderWidth: 3
+            }, {
             label: 'Absent',
             data: {{ att_absent_data| safe }},
-        borderColor: '#ff4757',
-        backgroundColor: 'rgba(255, 71, 87, 0.1)',
+        borderColor: '#f43f5e',
+        backgroundColor: 'rgba(244, 63, 94, 0.1)',
         fill: true,
         tension: 0.4,
         pointRadius: 4,
-        pointBackgroundColor: '#ff4757',
-        borderWidth: 2,
-                }
-    ]
+        borderWidth: 3
+            }]
         },
         options: {
         responsive: true,
-        plugins: {
-            legend: { labels: { color: '#aaa', font: { size: 11 } } }
-        },
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
         scales: {
-            x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+            x: { grid: { display: false } },
+            y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
         }
     }
     });
@@ -338,29 +347,29 @@
         type: 'bar',
         data: {
             labels: {{ fee_labels| safe }},
-        datasets: [
-        {
+        datasets: [{
             label: 'Collected',
             data: {{ fee_collected| safe }},
-        backgroundColor: 'rgba(102, 126, 234, 0.8)',
-        borderRadius: 8,
-                },
-        {
+        backgroundColor: '#6366f1',
+        borderRadius: 6
+            }, {
             label: 'Total Due',
             data: {{ fee_total| safe }},
-        backgroundColor: 'rgba(240, 147, 251, 0.4)',
-        borderRadius: 8,
-                }
-    ]
+        backgroundColor: '#e2e8f0',
+        borderRadius: 6
+            }]
         },
         options: {
         responsive: true,
-        plugins: {
-            legend: { labels: { color: '#aaa', font: { size: 11 } } }
-        },
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
         scales: {
-            x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { ticks: { color: '#888', callback: function (v) { return 'Rs.' + v / 1000 + 'k'; } }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+            x: { grid: { display: false } },
+            y: {
+                beginAtZero: true,
+                grid: { color: '#f1f5f9' },
+                ticks: { callback: v => 'Rs.' + v / 1000 + 'k' }
+            }
         }
     }
     });

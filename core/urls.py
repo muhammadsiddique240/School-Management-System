@@ -30,9 +30,13 @@ urlpatterns = [
     path('teacher/salary/', views.teacher_salary, name='teacher_salary'),
     path('teacher/apply-leave/', views.teacher_apply_leave, name='teacher_apply_leave'),
     path('teacher/attendance/', views.teacher_mark_attendance, name='teacher_mark_attendance'),
+    path('teacher/enter-results/', views.teacher_enter_results, name='teacher_enter_results'),
 
     # HR — Fee Management
     path('hr/fees/', views.hr_fee_management, name='hr_fee_management'),
     path('hr/fees/generate/', views.hr_generate_fees, name='hr_generate_fees'),
     path('hr/fees/collect/<int:challan_id>/', views.hr_collect_fee, name='hr_collect_fee'),
+
+    # Student
+    path('student/report-card/pdf/', views.student_download_report_card, name='student_download_report_card'),
 ]

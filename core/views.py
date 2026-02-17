@@ -7,8 +7,12 @@ from django.core.exceptions import ValidationError
 
 from .models import (
     User, ClassGrade, Subject, TeacherProfile,
-    Timetable, SalarySlip, LeaveApplication
+    Timetable, SalarySlip, LeaveApplication,
+    FeeChallan, DailyAttendance, StudentProfile, Result
 )
+from django.db.models import Sum, Count, Q
+from .utils_ai import calculate_student_risk
+import json
 from .forms import (
     LoginForm, TeacherUserForm, TeacherProfileForm,
     ClassGradeForm, SubjectForm, TimetableForm,
@@ -72,10 +76,6 @@ def principal_dashboard(request):
     total_students = User.objects.filter(role='Student').count()
 
     # ── Fee Revenue Data ──
-    from core.models import FeeChallan, DailyAttendance, StudentProfile, Result
-    from django.db.models import Sum, Count, Q
-    import json
-
     total_revenue = FeeChallan.objects.filter(status='Paid').aggregate(t=Sum('amount_paid'))['t'] or 0
     pending_fees = FeeChallan.objects.filter(status__in=['Unpaid', 'Overdue']).aggregate(t=Sum('total_amount'))['t'] or 0
     overdue_count = FeeChallan.objects.filter(status='Overdue').count()
@@ -88,7 +88,7 @@ def principal_dashboard(request):
     today_total = today_att.count()
     attendance_pct = round((today_present / today_total) * 100, 1) if today_total > 0 else 0
 
-    # ── Attendance Trend (last 10 school days for chart) ──
+    # ── Attendance Trend (last 10 school days) ──
     from django.db.models.functions import TruncDate
     att_trend = (
         DailyAttendance.objects
@@ -105,7 +105,7 @@ def principal_dashboard(request):
     att_present_data = [d['present'] for d in att_trend]
     att_absent_data = [d['absent'] for d in att_trend]
 
-    # ── Fee Collection by Month (for chart) ──
+    # ── Fee Collection by Month ──
     fee_months = FeeChallan.objects.values('month').annotate(
         collected=Sum('amount_paid'),
         total=Sum('total_amount'),
@@ -115,35 +115,21 @@ def principal_dashboard(request):
     fee_total = [float(f['total'] or 0) for f in fee_months]
 
     # ── At-Risk Students (attendance < 75% or avg grade < 50%) ──
+    # AI Driven Insights
     at_risk_students = []
-    for sp in StudentProfile.objects.select_related('user', 'class_grade').all()[:50]:
-        att_records = DailyAttendance.objects.filter(student=sp)
-        total_days = att_records.count()
-        present_days = att_records.filter(status='P').count()
-        att_rate = round((present_days / total_days) * 100, 1) if total_days > 0 else 100
-
-        results = Result.objects.filter(student=sp)
-        avg_marks = 0
-        if results.exists():
-            total_pct = sum(r.percentage for r in results)
-            avg_marks = round(total_pct / results.count(), 1)
-
-        risk_score = 0
-        if att_rate < 75:
-            risk_score += 40
-        if avg_marks < 50:
-            risk_score += 40
-        if att_rate < 60:
-            risk_score += 20
-
-        if risk_score >= 40:
+    
+    # Analyze all students for risk
+    all_students = StudentProfile.objects.select_related('user', 'class_grade')
+    for sp in all_students:
+        risk_level, risk_factors = calculate_student_risk(sp)
+        if risk_level == 'High':
             at_risk_students.append({
                 'name': sp.user.get_full_name(),
                 'class': str(sp.class_grade),
-                'attendance': att_rate,
-                'avg_grade': avg_marks,
-                'risk': 'High' if risk_score >= 60 else 'Medium',
+                'risk': risk_level,
+                'factors': risk_factors
             })
+
 
     context = {
         'pending_leaves': pending_leaves,
@@ -397,6 +383,38 @@ def teacher_apply_leave(request):
     return render(request, 'core/teacher/apply_leave.html', {'form': form, 'my_leaves': my_leaves})
 
 
+@login_required
+@role_required('Principal')
+def principal_dashboard(request):
+    from core.models import StudentProfile, User
+    from core.utils_ai import calculate_student_risk
+    
+    total_students = StudentProfile.objects.count()
+    total_teachers = User.objects.filter(role='Teacher').count()
+
+    # Calculate Risk for all students
+    high_risk_students = []
+    
+    # Analyze all students for risk
+    all_students = StudentProfile.objects.select_related('user', 'class_grade')
+    for sp in all_students:
+        risk_level, risk_factors = calculate_student_risk(sp)
+        if risk_level == 'High':
+            sp.risk = 'High'
+            sp.risk_factors = risk_factors
+            high_risk_students.append({
+                'name': sp.user.get_full_name(),
+                'class': str(sp.class_grade),
+                'risk': risk_level,
+                'factors': risk_factors
+            })
+
+    context = {
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'high_risk_students': high_risk_students[:5],
+    }
+    return render(request, 'core/principal/dashboard.html', context)
 # ─────────────────────────────────────────────
 # STUDENT VIEW (basic placeholder)
 # ─────────────────────────────────────────────
@@ -457,7 +475,137 @@ def student_dashboard(request):
         'midterm_data': json.dumps(midterm_data),
         'final_data': json.dumps(final_data),
     }
-    return render(request, 'core/student/dashboard.html', context)
+@login_required
+@role_required('Teacher')
+def teacher_enter_results(request):
+    from core.models import StudentProfile, Subject, ExamType, Result
+    classes = ClassGrade.objects.all()
+    subjects = Subject.objects.all()
+    exam_types = ExamType.objects.all()
+
+    class_id = request.GET.get('class_id')
+    subject_id = request.GET.get('subject_id')
+    exam_type_id = request.GET.get('exam_type_id')
+
+    selected_class = None
+    selected_subject = None
+    selected_exam_type = None
+    students_data = []
+
+    if class_id and subject_id and exam_type_id:
+        selected_class = ClassGrade.objects.filter(pk=class_id).first()
+        selected_subject = Subject.objects.filter(pk=subject_id).first()
+        selected_exam_type = ExamType.objects.filter(pk=exam_type_id).first()
+        
+        if selected_class and selected_subject and selected_exam_type:
+            students = StudentProfile.objects.filter(class_grade=selected_class).select_related('user')
+            
+            # Fetch existing results
+            existing_results_qs = Result.objects.filter(
+                student__class_grade=selected_class,
+                subject=selected_subject,
+                exam_type=selected_exam_type
+            )
+            existing_results = {r.student_id: r for r in existing_results_qs}
+            
+            for s in students:
+                res = existing_results.get(s.id)
+                students_data.append({
+                    'student': s,
+                    'result': res,
+                    'marks': res.marks_obtained if res else ''
+                })
+
+            if request.method == 'POST':
+                saved_count = 0
+                for item in students_data:
+                    student = item['student']
+                    marks = request.POST.get(f'marks_{student.id}')
+                    
+                    if marks:
+                        try:
+                            Result.objects.update_or_create(
+                                student=student,
+                                subject=selected_subject,
+                                exam_type=selected_exam_type,
+                                defaults={
+                                    'marks_obtained': float(marks),
+                                    'entered_by': request.user
+                                }
+                            )
+                            saved_count += 1
+                        except ValueError:
+                            pass # Skip invalid input
+                
+                messages.success(request, f'Results saved for {saved_count} students!')
+                # Keep the selection
+                return redirect(f'{request.path}?class_id={class_id}&subject_id={subject_id}&exam_type_id={exam_type_id}')
+
+    context = {
+        'classes': classes,
+        'subjects': subjects,
+        'exam_types': exam_types,
+        'selected_class': selected_class,
+        'selected_subject': selected_subject,
+        'selected_exam_type': selected_exam_type,
+        'students_data': students_data,
+        'class_id': int(class_id) if class_id else None,
+        'subject_id': int(subject_id) if subject_id else None,
+        'exam_type_id': int(exam_type_id) if exam_type_id else None,
+    }
+    return render(request, 'core/teacher/enter_results.html', context)
+
+
+@login_required
+@role_required('Student')
+def student_download_report_card(request):
+    from core.models import Result
+    from core.utils_pdf import render_to_pdf
+    
+    student = request.user.student_profile
+    # Fetch all results
+    results = Result.objects.filter(student=student).select_related('subject', 'exam_type')
+
+    # Organize by Subject -> ExamType
+    subjects_map = {}
+    for r in results:
+        sub_name = r.subject.name
+        if sub_name not in subjects_map:
+            subjects_map[sub_name] = {'weighted_total': 0, 'grade': 'F'}
+        
+        subjects_map[sub_name][r.exam_type.name] = {
+            'marks': r.marks_obtained,
+            'max': r.exam_type.max_marks,
+            'weightage': r.exam_type.weightage
+        }
+        # Add to weighted total
+        subjects_map[sub_name]['weighted_total'] += float(r.weighted_score)
+
+    # Calculate final grades
+    for sub, data in subjects_map.items():
+        total = data['weighted_total']
+        if total >= 90: data['grade'] = 'A+'
+        elif total >= 80: data['grade'] = 'A'
+        elif total >= 70: data['grade'] = 'B'
+        elif total >= 60: data['grade'] = 'C'
+        elif total >= 50: data['grade'] = 'D'
+        else: data['grade'] = 'F'
+        
+        # Round for display
+        data['weighted_total'] = round(total, 2)
+
+    context = {
+        'student': student,
+        'results': subjects_map,
+    }
+    
+    pdf = render_to_pdf('core/student/report_card_pdf.html', context)
+    if pdf:
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename = f"Report_Card_{student.user.username}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    return HttpResponse("Error rendering PDF", status=400)
 
 
 # ─────────────────────────────────────────────

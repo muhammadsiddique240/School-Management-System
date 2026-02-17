@@ -12,8 +12,7 @@
                 <div>
                     <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; opacity:0.6;">Total
                         Collected</div>
-                    <div style="font-size:1.5rem; font-weight:800; color:#2ed573;">Rs. {{ total_collected|floatformat:0
-                        }}</div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#2ed573;">Rs. {{ total_collected|floatformat:0 }}</div>
                 </div>
             </div>
         </div>
@@ -41,10 +40,10 @@
                 <label class="form-label">Filter by Status</label>
                 <select name="status" class="form-select" onchange="this.form.submit()">
                     <option value="">All</option>
-                    <option value="Unpaid" {% if status_filter=='Unpaid' %}selected{% endif %}>Unpaid</option>
-                    <option value="Paid" {% if status_filter=='Paid' %}selected{% endif %}>Paid</option>
-                    <option value="Overdue" {% if status_filter=='Overdue' %}selected{% endif %}>Overdue</option>
-                    <option value="Partial" {% if status_filter=='Partial' %}selected{% endif %}>Partial</option>
+                    <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+                    <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
+                    <option value="Partial" {% if status_filter == 'Partial' %}selected{% endif %}>Partial</option>
                 </select>
             </div>
         </form>
@@ -83,8 +82,7 @@
                     <tr>
                         <td style="opacity:0.5;">{{ forloop.counter0|add:page_obj.start_index }}</td>
                         <td>
-                            <i class="fas fa-user-graduate me-1" style="color:#4facfe;"></i>{{
-                            c.student.user.get_full_name }}
+                            <i class="fas fa-user-graduate me-1" style="color:#4facfe;"></i>{{ c.student.user.get_full_name }}
                         </td>
                         <td>{{ c.student.class_grade }}</td>
                         <td>{{ c.month }}</td>

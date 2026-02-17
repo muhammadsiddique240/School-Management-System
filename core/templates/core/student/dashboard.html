@@ -87,7 +87,12 @@
 <div class="row g-3 mb-4">
     <div class="col-md-7">
         <div class="card content-card">
-            <div class="card-header"><i class="fas fa-award me-2" style="color:#f59e0b;"></i>My Results</div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-award me-2" style="color:#f59e0b;"></i>My Results</span>
+                <a href="{% url 'student_download_report_card' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-file-pdf me-1"></i>Download Report
+                </a>
+            </div>
             <div class="card-body p-0">
                 {% if subjects_map %}
                 <table class="table table-hover align-middle mb-0" style="color:inherit;">

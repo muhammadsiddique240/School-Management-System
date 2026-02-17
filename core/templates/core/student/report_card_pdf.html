@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: Helvetica, sans-serif;
+            font-size: 12pt;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #1a237e;
+        }
+
+        .header p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .student-info {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .student-info td {
+            padding: 5px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        table.marks {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table.marks th,
+        table.marks td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        table.marks th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10pt;
+            color: #777;
+        }
+
+        .grade-A-plus {
+            color: #1a237e;
+            font-weight: bold;
+        }
+
+        .grade-A {
+            color: #004d40;
+            font-weight: bold;
+        }
+
+        .grade-B {
+            color: #f57f17;
+        }
+
+        .grade-F {
+            color: #b71c1c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>EduSmart School System</h1>
+        <p>Official Report Card</p>
+        <p>Academic Session 2026</p>
+    </div>
+
+    <table class="student-info">
+        <tr>
+            <td class="label">Student Name:</td>
+            <td>{{ student.user.get_full_name }}</td>
+            <td class="label">Class:</td>
+            <td>{{ student.class_grade }}</td>
+        </tr>
+        <tr>
+            <td class="label">Roll Number:</td>
+            <td>{{ student.roll_number }}</td>
+            <td class="label">Date:</td>
+            <td>{% now "d F Y" %}</td>
+        </tr>
+    </table>
+
+    <h3 style="margin-top: 20px; color: #333;">Academic Performance</h3>
+
+    <table class="marks">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Midterm (20%)</th>
+                <th>Final (80%)</th>
+                <th>Total Weighted</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject, data in results.items %}
+            <tr>
+                <td style="text-align: left; padding-left: 10px;">{{ subject }}</td>
+                <td>{{ data.Midterm.marks|default:"-" }} / {{ data.Midterm.max|default:"-" }}</td>
+                <td>{{ data.Final.marks|default:"-" }} / {{ data.Final.max|default:"-" }}</td>
+                <td><strong>{{ data.weighted_total }}</strong></td>
+                <td class="grade-{{ data.grade|slugify }}">{{ data.grade }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 30px;">
+        <p><strong>Remarks:</strong> {{ remarks|default:"Keep up the good work!" }}</p>
+    </div>
+
+    <div class="footer">
+        <p>This is a computer-generated document and does not require a signature.</p>
+        <p>Generated on {% now "d F Y H:i" %}</p>
+    </div>
+</body>
+
+</html>
