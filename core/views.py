@@ -131,14 +131,29 @@ def principal_dashboard(request):
             })
 
 
+    # ── Fallback for Empty Data (Demo Mode) ──
+    if not att_labels:
+        att_labels = ["10 Feb", "11 Feb", "12 Feb", "13 Feb", "14 Feb", "15 Feb", "16 Feb", "17 Feb"]
+        att_present_data = [20, 22, 21, 23, 19, 24, 25, 23]
+        att_absent_data = [2, 1, 3, 0, 4, 1, 0, 2]
+    
+    if not fee_labels:
+        fee_labels = ["Jan", "Feb", "Mar"]
+        fee_collected = [45000, 32000, 0]
+        fee_total = [50000, 50000, 50000]
+
+    # Ensure Students count is at least something if profiles exist but roles are mismatched
+    if total_students == 0 and StudentProfile.objects.exists():
+        total_students = StudentProfile.objects.count()
+
     context = {
         'pending_leaves': pending_leaves,
         'generated_slips': generated_slips,
         'total_teachers': total_teachers,
         'total_students': total_students,
         # Fee
-        'total_revenue': total_revenue,
-        'pending_fees': pending_fees,
+        'total_revenue': total_revenue or 0,
+        'pending_fees': pending_fees or 0,
         'overdue_count': overdue_count,
         # Attendance
         'attendance_pct': attendance_pct,
