@@ -130,3 +130,9 @@ AUTH_USER_MODEL = 'core.User'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+# SMS Configuration
+SMS_ENABLED = True
+TWILIO_ACCOUNT_SID = None  # 'YourSID'
+TWILIO_AUTH_TOKEN = None   # 'YourToken'
+TWILIO_PHONE_NUMBER = None # '+1234567890'

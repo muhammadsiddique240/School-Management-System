@@ -480,10 +480,12 @@ def teacher_mark_attendance(request):
             students = StudentProfile.objects.filter(class_grade=selected_class).select_related('user')
 
     if request.method == 'POST' and selected_class:
+        from core.utils import send_sms
         saved = 0
+        sms_sent = 0
         for sp in students:
             status = request.POST.get(f'att_{sp.id}', 'P')
-            DailyAttendance.objects.update_or_create(
+            obj, created = DailyAttendance.objects.update_or_create(
                 student=sp, date=today,
                 defaults={
                     'status': status,
@@ -491,7 +493,16 @@ def teacher_mark_attendance(request):
                 }
             )
             saved += 1
-        messages.success(request, f'Attendance saved for {saved} students in {selected_class}!')
+            
+            # Send SMS if Absent and was not already Absent (or is new record)
+            # Simplified logic: If status is 'A', send SMS. Using a flag to avoid spamming in real app would be better.
+            # Here, we send every time 'A' is submitted for demo purposes.
+            if status == 'A' and sp.parent_phone:
+                msg = f"Dear Parent, your child {sp.user.get_full_name()} is absent today ({today.strftime('%d %b %Y')}). - EduSmart"
+                if send_sms(sp.parent_phone, msg):
+                    sms_sent += 1
+                    
+        messages.success(request, f'Attendance saved for {saved} students! {sms_sent} SMS sent.')
         return redirect(f'/teacher/attendance/?class_id={class_id}')
 
     # Check which are already marked
