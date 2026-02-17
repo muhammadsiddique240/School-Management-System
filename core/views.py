@@ -518,7 +518,8 @@ def teacher_mark_attendance(request):
 @role_required('HR')
 def hr_fee_management(request):
     from core.models import FeeChallan, FeeStructure, StudentProfile
-    from django.db.models import Sum
+    from django.db.models import Sum, F
+    from django.core.paginator import Paginator
 
     challans = FeeChallan.objects.select_related('student__user', 'student__class_grade').all()
 
@@ -527,11 +528,20 @@ def hr_fee_management(request):
     if status_filter:
         challans = challans.filter(status=status_filter)
 
-    total_collected = challans.filter(status='Paid').aggregate(t=Sum('amount_paid'))['t'] or 0
-    total_pending = challans.filter(status__in=['Unpaid', 'Overdue']).aggregate(t=Sum('total_amount'))['t'] or 0
+    # Annotate balance on each challan
+    challans = challans.annotate(balance=F('total_amount') - F('amount_paid'))
+
+    total_collected = FeeChallan.objects.aggregate(t=Sum('amount_paid'))['t'] or 0
+    total_pending = challans.exclude(status='Paid').aggregate(t=Sum('balance'))['t'] or 0
+
+    # Pagination
+    paginator = Paginator(challans, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'challans': challans[:100],
+        'challans': page_obj,
+        'page_obj': page_obj,
         'total_collected': total_collected,
         'total_pending': total_pending,
         'status_filter': status_filter,

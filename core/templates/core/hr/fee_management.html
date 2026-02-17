@@ -41,10 +41,10 @@
                 <label class="form-label">Filter by Status</label>
                 <select name="status" class="form-select" onchange="this.form.submit()">
                     <option value="">All</option>
-                    <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>Unpaid</option>
-                    <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid</option>
-                    <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
-                    <option value="Partial" {% if status_filter == 'Partial' %}selected{% endif %}>Partial</option>
+                    <option value="Unpaid" {% if status_filter=='Unpaid' %}selected{% endif %}>Unpaid</option>
+                    <option value="Paid" {% if status_filter=='Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Overdue" {% if status_filter=='Overdue' %}selected{% endif %}>Overdue</option>
+                    <option value="Partial" {% if status_filter=='Partial' %}selected{% endif %}>Partial</option>
                 </select>
             </div>
         </form>
@@ -53,42 +53,43 @@
 
 <!-- Challans Table -->
 <div class="card content-card">
-    <div class="card-header"><i class="fas fa-list me-2"></i>Fee Challans</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-list me-2"></i>Fee Challans</span>
+        <span class="badge bg-secondary">{{ page_obj.paginator.count }} records</span>
+    </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" style="color:inherit;">
                 <thead>
                     <tr style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; opacity:0.6;">
-                        <th>Student</th>
-                        <th>Class</th>
-                        <th>Month</th>
-                        <th>Total</th>
-                        <th>Paid</th>
-                        <th>Balance</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th style="min-width:40px;">#</th>
+                        <th style="min-width:180px;">Student</th>
+                        <th style="min-width:120px;">Class</th>
+                        <th style="min-width:120px;">Month</th>
+                        <th class="text-end" style="min-width:90px;">Total</th>
+                        <th class="text-end" style="min-width:90px;">Paid</th>
+                        <th class="text-end" style="min-width:90px;">Balance</th>
+                        <th class="text-center" style="min-width:80px;">Status</th>
+                        <th style="min-width:180px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for c in challans %}
                     <tr>
+                        <td style="opacity:0.5;">{{ forloop.counter0|add:page_obj.start_index }}</td>
                         <td><i class="fas fa-user-graduate me-1" style="color:#4facfe;"></i>{{
                             c.student.user.get_full_name }}</td>
                         <td>{{ c.student.class_grade }}</td>
                         <td>{{ c.month }}</td>
-                        <td>Rs. {{ c.total_amount|floatformat:0 }}</td>
-                        <td>Rs. {{ c.amount_paid|floatformat:0 }}</td>
-                        <td
-                            style="font-weight:700; color:{% if c.total_amount > c.amount_paid %}#ff4757{% else %}#2ed573{% endif %};">
-                            Rs. {% widthratio c.amount_paid 1 -1 as neg_paid %}{{
-                            c.total_amount|add:neg_paid|default:"0" }}
-                        </td>
-                        <td>
-                            <span class="badge rounded-pill" style="
-                                background: {% if c.status == 'Paid' %}#2ed573{% elif c.status == 'Partial' %}#ffa502{% elif c.status == 'Overdue' %}#ff4757{% else %}#888{% endif %};
-                                font-weight: 700; padding: 4px 12px;">
-                                {{ c.status }}
-                            </span>
+                        <td class="text-end">Rs. {{ c.total_amount|floatformat:0 }}</td>
+                        <td class="text-end">Rs. {{ c.amount_paid|floatformat:0 }}</td>
+                        <td class="text-end fw-bold"
+                            style="color:{% if c.balance > 0 %}#ff4757{% else %}#2ed573{% endif %};">Rs. {{
+                            c.balance|floatformat:0 }}</td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill"
+                                style="background:{% if c.status == 'Paid' %}#2ed573{% elif c.status == 'Partial' %}#ffa502{% elif c.status == 'Overdue' %}#ff4757{% else %}#888{% endif %}; font-weight:700; padding:4px 12px;">{{
+                                c.status }}</span>
                         </td>
                         <td>
                             {% if c.status != 'Paid' %}
@@ -106,10 +107,50 @@
                             {% endif %}
                         </td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4" style="opacity:0.5;">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>No fee challans found.
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <small style="opacity:0.6;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo;
+                        Prev</a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %} <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next
+                            &raquo;</a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
