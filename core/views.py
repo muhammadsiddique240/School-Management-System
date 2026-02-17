@@ -75,10 +75,14 @@ def principal_dashboard(request):
     total_teachers = TeacherProfile.objects.count()
     total_students = User.objects.filter(role='Student').count()
 
-    # ── Fee Revenue Data ──
-    total_revenue = FeeChallan.objects.filter(status='Paid').aggregate(t=Sum('amount_paid'))['t'] or 0
-    pending_fees = FeeChallan.objects.filter(status__in=['Unpaid', 'Overdue']).aggregate(t=Sum('total_amount'))['t'] or 0
-    overdue_count = FeeChallan.objects.filter(status='Overdue').count()
+    # ── Fee Revenue Data (Matches HR logic) ──
+    from django.db.models import Sum, F
+    all_challans = FeeChallan.objects.all()
+    total_revenue = all_challans.aggregate(t=Sum('amount_paid'))['t'] or 0
+    pending_fees = all_challans.exclude(status='Paid').annotate(
+        balance=F('total_amount') - F('amount_paid')
+    ).aggregate(t=Sum('balance'))['t'] or 0
+    overdue_count = all_challans.filter(status='Overdue').count()
 
     # ── Attendance Today ──
     today = datetime.datetime.now().date()
@@ -398,38 +402,7 @@ def teacher_apply_leave(request):
     return render(request, 'core/teacher/apply_leave.html', {'form': form, 'my_leaves': my_leaves})
 
 
-@login_required
-@role_required('Principal')
-def principal_dashboard(request):
-    from core.models import StudentProfile, User
-    from core.utils_ai import calculate_student_risk
-    
-    total_students = StudentProfile.objects.count()
-    total_teachers = User.objects.filter(role='Teacher').count()
 
-    # Calculate Risk for all students
-    high_risk_students = []
-    
-    # Analyze all students for risk
-    all_students = StudentProfile.objects.select_related('user', 'class_grade')
-    for sp in all_students:
-        risk_level, risk_factors = calculate_student_risk(sp)
-        if risk_level == 'High':
-            sp.risk = 'High'
-            sp.risk_factors = risk_factors
-            high_risk_students.append({
-                'name': sp.user.get_full_name(),
-                'class': str(sp.class_grade),
-                'risk': risk_level,
-                'factors': risk_factors
-            })
-
-    context = {
-        'total_students': total_students,
-        'total_teachers': total_teachers,
-        'high_risk_students': high_risk_students[:5],
-    }
-    return render(request, 'core/principal/dashboard.html', context)
 # ─────────────────────────────────────────────
 # STUDENT VIEW (basic placeholder)
 # ─────────────────────────────────────────────
