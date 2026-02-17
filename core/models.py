@@ -292,7 +292,7 @@ class Result(models.Model):
     def weighted_score(self):
         """Returns weighted contribution: (marks/max) * weightage"""
         if self.exam_type.max_marks > 0:
-            return round((self.marks_obtained / self.exam_type.max_marks) * float(self.exam_type.weightage), 2)
+            return round((self.marks_obtained / self.exam_type.max_marks) * self.exam_type.weightage, 2)
         return 0
 
     @property

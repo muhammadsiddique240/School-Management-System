@@ -441,8 +441,8 @@ def student_dashboard(request):
 
     # Chart data
     subject_labels = list(subjects_map.keys())
-    midterm_data = [subjects_map[s].get('Midterm', {}).get('pct', 0) for s in subject_labels]
-    final_data = [subjects_map[s].get('Final', {}).get('pct', 0) for s in subject_labels]
+    midterm_data = [float(subjects_map[s].get('Midterm', {}).get('pct', 0)) for s in subject_labels]
+    final_data = [float(subjects_map[s].get('Final', {}).get('pct', 0)) for s in subject_labels]
 
     context = {
         'profile': profile,
